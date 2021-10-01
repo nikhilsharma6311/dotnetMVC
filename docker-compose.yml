@@ -1,0 +1,41 @@
+version: '2'
+
+services:
+  db:
+    image: postgres:12
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+    ports:
+      - 9091:5432
+  db_admin:
+    image: dpage/pgadmin4
+    depends_on:
+      - db
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: dev@medialesson.de
+      PGADMIN_DEFAULT_PASSWORD: 'postgres123'
+    ports:
+      - 9092:80
+  my_server:
+    build:
+      context: ./WebApplication1
+    depends_on:
+      - db
+    links:
+      - db
+    ports:
+      - 9093:80
+    environment:
+      Database__DB_USER: postgres
+      Database__DB_PASSWORD: postgres123
+      Database__DB_HOST: db
+      Database__DB_PORT: 5432
+  my_client:
+    build: ./angular-client
+    depends_on:
+      - my_server
+    ports:
+      - 9094:3000
